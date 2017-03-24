@@ -1,3 +1,5 @@
+require('dotenv-extended').load()
+
 var express = require('express')
 var app = express()
 var bodyParser = require('body-parser')
@@ -12,6 +14,59 @@ var router = express.Router()
 router.get('/', function(req, res) {
   res.json({ message: 'Paper Finder API v1.0' })
 })
+
+router.route('/scopus')
+  .get(function (req, res) {
+    var type = req.query.type
+    var baseURL ='http://api.elsevier.com/content/search/'
+    var query = ''
+
+    switch (type) {
+      case 'query':
+        query = 'scopus?query=' + req.query.query
+        break;
+      case 'author':
+        query = 'author?query=' + req.query.query
+        break;
+    }
+
+    var url = baseURL + query
+
+    console.log(url);
+
+    var options = {
+      url: url,
+      method: 'GET',
+      headers: {
+        'X-ELS-APIKey': process.env.SCOPUS_API_KEY
+      },
+      json: true
+    }
+
+    var request = require('request');
+    request(options, function (error, response, body) {
+      res.send(body);
+    });
+  })
+
+router.route('/officialieee')
+  .post(function (req, res) {
+    var baseURL = 'http://ieeexplore.ieee.org/gateway/ipsSearch.jsp?'
+    var query = (req.body.query) ? ('&querytext=' + req.body.query): ''
+    var author = (req.body.author) ? ('&au=' + req.body.author): ''
+
+    var searchQueries = query + author
+
+    var url = baseURL + searchQueries.substring(1)
+
+    var request = require('request');
+    request(url, function (error, response, body) {
+      var parseString = require('xml2js').parseString;
+      parseString(body, function (err, result) {
+          res.json(result)
+      });
+    });
+  })
 
 router.route('/ieee')
   .post(function (req, res) {
