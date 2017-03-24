@@ -19,16 +19,7 @@ router.route('/scopus')
   .get(function (req, res) {
     var type = req.query.type
     var baseURL ='http://api.elsevier.com/content/search/'
-    var query = ''
-
-    switch (type) {
-      case 'query':
-        query = 'scopus?query=' + req.query.query
-        break;
-      case 'author':
-        query = 'author?query=' + req.query.query
-        break;
-    }
+    var query = type + '?query=' + req.query.query
 
     var url = baseURL + query
 
@@ -49,12 +40,11 @@ router.route('/scopus')
     });
   })
 
-router.route('/officialieee')
+router.route('/ieeexplore')
   .post(function (req, res) {
     var baseURL = 'http://ieeexplore.ieee.org/gateway/ipsSearch.jsp?'
     var query = (req.body.query) ? ('&querytext=' + req.body.query): ''
     var author = (req.body.author) ? ('&au=' + req.body.author): ''
-
     var searchQueries = query + author
 
     var url = baseURL + searchQueries.substring(1)
@@ -63,12 +53,42 @@ router.route('/officialieee')
     request(url, function (error, response, body) {
       var parseString = require('xml2js').parseString;
       parseString(body, function (err, result) {
-          res.json(result)
+        var docs = result.root.document
+        var papers = []
+
+        docs.forEach(doc => {
+          var paper = {
+            'title': doc.title[0],
+            'authors': doc.authors[0].split('; '),
+            'affiliations': doc.affiliations[0],
+            'keywords': doc.controlledterms[0].term,
+            'pubtitle': doc.pubtitle[0],
+            'pubnumber': doc.punumber[0],
+            'pubtype': doc.pubtype[0],
+            'publisher': doc.publisher[0],
+            'py': doc.py[0],
+            'pages': [doc.spage[0], doc.epage[0]],
+            'abstract': doc.abstract[0],
+            'isbn': (doc.isbn) ? doc.isbn[0] : '',
+            'issn': (doc.issn) ? doc.issn[0] : '',
+            'doi': doc.doi[0],
+            'pdf': doc.pdf[0]
+          }
+          papers.push(paper)
+        })
+
+        var data = {
+          'found': result.root.totalfound[0],
+          'searched': result.root.totalsearched[0],
+          'papers': papers
+        }
+
+        res.json(data)
       });
     });
   })
 
-router.route('/ieee')
+router.route('/ieeescraper')
   .post(function (req, res) {
     var term = req.body.term
     var sort = req.body.sort
