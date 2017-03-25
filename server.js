@@ -60,19 +60,19 @@ router.route('/ieeexplore')
           var paper = {
             'title': doc.title[0],
             'authors': doc.authors[0].split('; '),
-            'affiliations': doc.affiliations[0],
-            'keywords': doc.controlledterms[0].term,
-            'pubtitle': doc.pubtitle[0],
-            'pubnumber': doc.punumber[0],
-            'pubtype': doc.pubtype[0],
-            'publisher': doc.publisher[0],
-            'py': doc.py[0],
-            'pages': [doc.spage[0], doc.epage[0]],
-            'abstract': doc.abstract[0],
+            'affiliations': (doc.affiliations) ? doc.affiliations[0] : '',
+            'keywords': (doc.controlledterms) ? doc.controlledterms[0].term : '',
+            'pubtitle': (doc.pubtitle) ? doc.pubtitle[0] : '',
+            'pubnumber': (doc.pubnumber) ? doc.punumber[0] : '',
+            'pubtype': (doc.pubtype) ? doc.pubtype[0] : '',
+            'publisher': (doc.publisher) ? doc.publisher[0] : '',
+            'py': (doc.py) ? doc.py[0] : '',
+            'pages': (doc.spage && doc.epage) ? [doc.spage[0], doc.epage[0]] : ['', ''],
+            'abstract': (doc.abstract) ? doc.abstract[0] : '',
             'isbn': (doc.isbn) ? doc.isbn[0] : '',
             'issn': (doc.issn) ? doc.issn[0] : '',
-            'doi': doc.doi[0],
-            'pdf': doc.pdf[0]
+            'doi': (doc.doi) ? doc.doi[0] : '',
+            'pdf': (doc.pdf) ? doc.pdf[0] : ''
           }
           papers.push(paper)
         })
